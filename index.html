@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Invoice Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-gray-100 py-10 px-4">
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-xl">
+    <h1 class="text-3xl font-bold mb-6 text-center">Invoice Generator</h1>
+
+    <div id="invoice" class="p-4 border rounded">
+      <!-- Sender and Receiver Info -->
+      <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block font-semibold">Your Company</label>
+          <input id="from" class="w-full border p-2 rounded" placeholder="Your Business Name"/>
+        </div>
+        <div>
+          <label class="block font-semibold">Bill To</label>
+          <input id="to" class="w-full border p-2 rounded" placeholder="Client Name"/>
+        </div>
+      </div>
+
+      <!-- Invoice Items -->
+      <table class="w-full mb-4" id="itemsTable">
+        <thead>
+          <tr class="bg-gray-200 text-left">
+            <th class="p-2">Item</th>
+            <th class="p-2">Qty</th>
+            <th class="p-2">Price</th>
+            <th class="p-2">Total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="items">
+          <tr>
+            <td><input class="w-full border p-1" placeholder="Item name"></td>
+            <td><input type="number" class="w-full border p-1 qty" value="1"></td>
+            <td><input type="number" class="w-full border p-1 price" value="0"></td>
+            <td class="p-2 total">0</td>
+            <td><button onclick="removeRow(this)" class="text-red-500">✖</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button onclick="addRow()" class="mb-4 px-4 py-2 bg-blue-500 text-white rounded">+ Add Item</button>
+
+      <!-- Total -->
+      <div class="text-right font-bold text-lg">
+        Total: £<span id="grandTotal">0.00</span>
+      </div>
+    </div>
+
+    <!-- Download Button -->
+    <div class="text-center mt-6">
+      <button onclick="downloadInvoice()" class="px-6 py-2 bg-green-600 text-white rounded">Download PDF</button>
+    </div>
+  </div>
+
+  <script>
+    function addRow() {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><input class="w-full border p-1" placeholder="Item name"></td>
+        <td><input type="number" class="w-full border p-1 qty" value="1"></td>
+        <td><input type="number" class="w-full border p-1 price" value="0"></td>
+        <td class="p-2 total">0</td>
+        <td><button onclick="removeRow(this)" class="text-red-500">✖</button></td>
+      `;
+      document.getElementById('items').appendChild(row);
+      updateTotals();
+      attachEvents();
+    }
+
+    function removeRow(btn) {
+      btn.parentElement.parentElement.remove();
+      updateTotals();
+    }
+
+    function attachEvents() {
+      document.querySelectorAll('.qty, .price').forEach(el => {
+        el.oninput = updateTotals;
+      });
+    }
+
+    function updateTotals() {
+      let grandTotal = 0;
+      document.querySelectorAll('#items tr').forEach(row => {
+        const qty = row.querySelector('.qty')?.value || 0;
+        const price = row.querySelector('.price')?.value || 0;
+        const total = parseFloat(qty) * parseFloat(price);
+        if (!isNaN(total)) {
+          row.querySelector('.total').textContent = total.toFixed(2);
+          grandTotal += total;
+        }
+      });
+      document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+    }
+
+    function downloadInvoice() {
+      const element = document.getElementById('invoice');
+      const opt = {
+        margin: 0.5,
+        filename: 'invoice.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+
+    // Attach on page load
+    attachEvents();
+  </script>
+</body>
+</html>
