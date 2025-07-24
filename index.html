@@ -159,12 +159,5 @@
 
     attachEvents();
   </script>
-  document.addEventListener("DOMContentLoaded", () => {
-  const dateInput = document.getElementById('invoiceDate');
-  if (dateInput) {
-    const today = new Date().toISOString().split('T')[0];
-    dateInput.value = today;
-  }
-});
 </body>
 </html>
