@@ -8,54 +8,66 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-gray-100 py-10 px-4">
-  <div class="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-xl">
-    <h1 class="text-3xl font-bold mb-6 text-center">Invoice Generator</h1>
+  <div class="max-w-4xl mx-auto bg-white p-10 rounded-lg shadow-md space-y-8">
+    <header class="text-center">
+      <h1 class="text-4xl font-bold mb-2">Invoice Generator</h1>
+      <p class="text-gray-500">Create and download custom invoices</p>
+    </header>
 
-    <div id="invoice" class="p-4 border rounded">
-      <!-- Sender and Receiver Info -->
-      <div class="grid md:grid-cols-2 gap-4 mb-4">
+    <div id="invoice" class="space-y-6">
+      <!-- Header Info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label class="block font-semibold">Your Company</label>
-          <input id="from" class="w-full border p-2 rounded" placeholder="Your Business Name"/>
+          <label class="block font-semibold text-sm text-gray-600">Your Company</label>
+          <input id="from" class="w-full border border-gray-300 p-3 rounded" placeholder="Business Name / Address" />
         </div>
         <div>
-          <label class="block font-semibold">Bill To</label>
-          <input id="to" class="w-full border p-2 rounded" placeholder="Client Name"/>
+          <label class="block font-semibold text-sm text-gray-600">Bill To</label>
+          <input id="to" class="w-full border border-gray-300 p-3 rounded" placeholder="Client Name / Address" />
         </div>
       </div>
 
-      <!-- Invoice Items -->
-      <table class="w-full mb-4" id="itemsTable">
-        <thead>
-          <tr class="bg-gray-200 text-left">
-            <th class="p-2">Item</th>
-            <th class="p-2">Qty</th>
-            <th class="p-2">Price</th>
-            <th class="p-2">Total</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="items">
-          <tr>
-            <td><input class="w-full border p-1" placeholder="Item name"></td>
-            <td><input type="number" class="w-full border p-1 qty" value="1"></td>
-            <td><input type="number" class="w-full border p-1 price" value="0"></td>
-            <td class="p-2 total">0</td>
-            <td><button onclick="removeRow(this)" class="text-red-500">✖</button></td>
-          </tr>
-        </tbody>
-      </table>
-      <button onclick="addRow()" class="mb-4 px-4 py-2 bg-blue-500 text-white rounded">+ Add Item</button>
+      <!-- Invoice Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border border-gray-200" id="itemsTable">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="text-left p-3 border">Item</th>
+              <th class="text-left p-3 border">Quantity</th>
+              <th class="text-left p-3 border">Price</th>
+              <th class="text-left p-3 border">Total</th>
+              <th class="p-3 border text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody id="items">
+            <tr>
+              <td class="border p-2"><input class="w-full border p-2 rounded" placeholder="Item name" /></td>
+              <td class="border p-2"><input type="number" class="w-full border p-2 rounded qty" value="1" /></td>
+              <td class="border p-2"><input type="number" class="w-full border p-2 rounded price" value="0" /></td>
+              <td class="border p-2 total">0.00</td>
+              <td class="border p-2 text-center">
+                <button onclick="removeRow(this)" class="text-red-500 font-bold">×</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      <!-- Total -->
-      <div class="text-right font-bold text-lg">
-        Total: £<span id="grandTotal">0.00</span>
+      <div class="text-right">
+        <button onclick="addRow()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">+ Add Item</button>
+      </div>
+
+      <!-- Totals -->
+      <div class="flex justify-end text-xl font-semibold">
+        <div>Total: £<span id="grandTotal">0.00</span></div>
       </div>
     </div>
 
     <!-- Download Button -->
-    <div class="text-center mt-6">
-      <button onclick="downloadInvoice()" class="px-6 py-2 bg-green-600 text-white rounded">Download PDF</button>
+    <div class="text-center pt-6">
+      <button onclick="downloadInvoice()" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-lg font-medium">
+        Download Invoice PDF
+      </button>
     </div>
   </div>
 
@@ -63,11 +75,13 @@
     function addRow() {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td><input class="w-full border p-1" placeholder="Item name"></td>
-        <td><input type="number" class="w-full border p-1 qty" value="1"></td>
-        <td><input type="number" class="w-full border p-1 price" value="0"></td>
-        <td class="p-2 total">0</td>
-        <td><button onclick="removeRow(this)" class="text-red-500">✖</button></td>
+        <td class="border p-2"><input class="w-full border p-2 rounded" placeholder="Item name" /></td>
+        <td class="border p-2"><input type="number" class="w-full border p-2 rounded qty" value="1" /></td>
+        <td class="border p-2"><input type="number" class="w-full border p-2 rounded price" value="0" /></td>
+        <td class="border p-2 total">0.00</td>
+        <td class="border p-2 text-center">
+          <button onclick="removeRow(this)" class="text-red-500 font-bold">×</button>
+        </td>
       `;
       document.getElementById('items').appendChild(row);
       updateTotals();
@@ -75,28 +89,28 @@
     }
 
     function removeRow(btn) {
-      btn.parentElement.parentElement.remove();
+      btn.closest('tr').remove();
       updateTotals();
     }
 
     function attachEvents() {
       document.querySelectorAll('.qty, .price').forEach(el => {
-        el.oninput = updateTotals;
+        el.addEventListener('input', updateTotals);
       });
     }
 
     function updateTotals() {
-      let grandTotal = 0;
+      let total = 0;
       document.querySelectorAll('#items tr').forEach(row => {
-        const qty = row.querySelector('.qty')?.value || 0;
-        const price = row.querySelector('.price')?.value || 0;
-        const total = parseFloat(qty) * parseFloat(price);
-        if (!isNaN(total)) {
-          row.querySelector('.total').textContent = total.toFixed(2);
-          grandTotal += total;
+        const qty = parseFloat(row.querySelector('.qty')?.value || 0);
+        const price = parseFloat(row.querySelector('.price')?.value || 0);
+        const rowTotal = qty * price;
+        if (!isNaN(rowTotal)) {
+          row.querySelector('.total').textContent = rowTotal.toFixed(2);
+          total += rowTotal;
         }
       });
-      document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+      document.getElementById('grandTotal').textContent = total.toFixed(2);
     }
 
     function downloadInvoice() {
@@ -106,12 +120,11 @@
         filename: 'invoice.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
       html2pdf().set(opt).from(element).save();
     }
 
-    // Attach on page load
     attachEvents();
   </script>
 </body>
