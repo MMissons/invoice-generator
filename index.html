@@ -1,133 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Invoice Generator</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    input, textarea {
-      font-size: 1rem;
-      overflow-wrap: break-word;
-      word-break: break-word;
-    }
-  </style>
 </head>
-<body class="bg-gray-100 p-8">
-  <div class="max-w-4xl mx-auto bg-white p-8 rounded shadow">
+<body class="bg-gray-100 p-6 text-sm">
+  <div class="max-w-4xl mx-auto bg-white p-8 rounded shadow space-y-6">
     <h1 class="text-2xl font-bold mb-4">Invoice Generator</h1>
 
-    <div class="grid md:grid-cols-2 gap-6 mb-6">
+    <!-- Logo Upload -->
+    <div class="mb-4">
+      <label class="block font-semibold mb-1">Upload Your Logo</label>
+      <input type="file" accept="image/*" id="logoInput" class="mb-2">
+      <img id="logoPreview" src="" alt="Logo Preview" class="max-h-20">
+    </div>
+
+    <!-- From & To -->
+    <div class="grid md:grid-cols-2 gap-6">
       <div>
-        <label class="block font-semibold text-sm text-gray-600 mb-1">Billing From</label>
-        <textarea id="from" rows="6" class="w-full border p-3 rounded resize-y"></textarea>
+        <label class="font-semibold">Billing From</label>
+        <textarea id="from" rows="5" class="w-full border p-3 rounded resize-y" placeholder="Your company name, address, VAT number..."></textarea>
       </div>
       <div>
-        <label class="block font-semibold text-sm text-gray-600 mb-1">Billing To</label>
-        <textarea id="to" rows="6" class="w-full border p-3 rounded resize-y"></textarea>
+        <label class="font-semibold">Billing To</label>
+        <textarea id="to" rows="5" class="w-full border p-3 rounded resize-y" placeholder="Client name, address, VAT number..."></textarea>
       </div>
     </div>
 
-    <div class="grid md:grid-cols-2 gap-6 mb-6">
+    <!-- Invoice Dates -->
+    <div class="grid md:grid-cols-3 gap-6">
       <div>
-        <label class="block font-semibold text-sm text-gray-600 mb-1">Invoice Date</label>
-        <input type="date" id="invoiceDate" class="w-full border p-3 rounded" />
+        <label class="font-semibold">Invoice Date</label>
+        <input type="date" id="invoiceDate" class="w-full border p-3 rounded">
+      </div>
+      <div>
+        <label class="font-semibold">Payment Terms</label>
+        <select id="paymentTerms" class="w-full border p-3 rounded">
+          <option value="7">7 days</option>
+          <option value="14">14 days</option>
+          <option value="30" selected>30 days</option>
+          <option value="60">60 days</option>
+        </select>
+      </div>
+      <div>
+        <label class="font-semibold">Due Date</label>
+        <input type="date" id="dueDate" class="w-full border p-3 rounded" readonly>
       </div>
     </div>
 
-    <table class="w-full border mb-6">
-      <thead>
-        <tr class="bg-gray-200">
-          <th class="border p-2">Item</th>
-          <th class="border p-2">Qty</th>
-          <th class="border p-2">Price</th>
-          <th class="border p-2">VAT %</th>
-          <th class="border p-2">Net</th>
-          <th class="border p-2">VAT</th>
-          <th class="border p-2">Gross</th>
-        </tr>
-      </thead>
-      <tbody id="items">
-        <tr>
-          <td class="border p-2 whitespace-normal">
-            <textarea class="w-full border p-2 rounded resize-y" rows="2" placeholder="Item name"></textarea>
-          </td>
-          <td class="border p-2">
-            <input type="number" class="w-full border p-2 rounded" placeholder="1" />
-          </td>
-          <td class="border p-2">
-            <input type="number" class="w-full border p-2 rounded" placeholder="0.00" />
-          </td>
-          <td class="border p-2">
-            <input type="number" class="w-full border p-2 rounded" placeholder="20" />
-          </td>
-          <td class="border p-2">0.00</td>
-          <td class="border p-2">0.00</td>
-          <td class="border p-2">0.00</td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- Invoice Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full border mt-6">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="p-2 border">Description</th>
+            <th class="p-2 border">Qty</th>
+            <th class="p-2 border">Unit Price</th>
+            <th class="p-2 border">VAT %</th>
+            <th class="p-2 border">Net</th>
+            <th class="p-2 border">VAT</th>
+            <th class="p-2 border">Gross</th>
+          </tr>
+        </thead>
+        <tbody id="items">
+          <tr>
+            <td class="border p-2"><textarea class="w-full border p-2 rounded resize-y" rows="2" placeholder="Item description"></textarea></td>
+            <td class="border p-2"><input type="number" class="w-full border p-2 rounded qty" value="1"></td>
+            <td class="border p-2"><input type="number" class="w-full border p-2 rounded price" value="0"></td>
+            <td class="border p-2"><input type="number" class="w-full border p-2 rounded vatRate" value="20"></td>
+            <td class="border p-2 net">0.00</td>
+            <td class="border p-2 vat">0.00</td>
+            <td class="border p-2 gross">0.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <button onclick="addRow()" class="mb-6 bg-blue-500 text-white px-4 py-2 rounded">Add Line Item</button>
+    <button onclick="addItem()" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded">+ Add Item</button>
 
-    <div class="text-right space-y-2">
-      <div>Subtotal (Net): <span id="netTotal">0.00</span></div>
-      <div>Total VAT: <span id="vatTotal">0.00</span></div>
-      <div class="font-bold text-lg">Total (Gross): <span id="grossTotal">0.00</span></div>
+    <!-- Totals -->
+    <div class="text-right mt-4 space-y-1">
+      <div><strong>Total Net:</strong> £<span id="totalNet">0.00</span></div>
+      <div><strong>Total VAT:</strong> £<span id="totalVAT">0.00</span></div>
+      <div><strong>Total Gross:</strong> £<span id="totalGross">0.00</span></div>
     </div>
   </div>
 
   <script>
-    function updateTotals() {
-      let net = 0, vat = 0, gross = 0;
+    function calculate() {
+      let totalNet = 0, totalVAT = 0, totalGross = 0;
       document.querySelectorAll('#items tr').forEach(row => {
-        const qty = parseFloat(row.cells[1].querySelector('input')?.value || 0);
-        const price = parseFloat(row.cells[2].querySelector('input')?.value || 0);
-        const vatRate = parseFloat(row.cells[3].querySelector('input')?.value || 0);
+        const qty = parseFloat(row.querySelector('.qty')?.value) || 0;
+        const price = parseFloat(row.querySelector('.price')?.value) || 0;
+        const vatRate = parseFloat(row.querySelector('.vatRate')?.value) || 0;
 
-        const lineNet = qty * price;
-        const lineVat = (lineNet * vatRate) / 100;
-        const lineGross = lineNet + lineVat;
+        const net = qty * price;
+        const vat = net * (vatRate / 100);
+        const gross = net + vat;
 
-        row.cells[4].textContent = lineNet.toFixed(2);
-        row.cells[5].textContent = lineVat.toFixed(2);
-        row.cells[6].textContent = lineGross.toFixed(2);
+        row.querySelector('.net').textContent = net.toFixed(2);
+        row.querySelector('.vat').textContent = vat.toFixed(2);
+        row.querySelector('.gross').textContent = gross.toFixed(2);
 
-        net += lineNet;
-        vat += lineVat;
-        gross += lineGross;
+        totalNet += net;
+        totalVAT += vat;
+        totalGross += gross;
       });
 
-      document.getElementById('netTotal').textContent = net.toFixed(2);
-      document.getElementById('vatTotal').textContent = vat.toFixed(2);
-      document.getElementById('grossTotal').textContent = gross.toFixed(2);
+      document.getElementById('totalNet').textContent = totalNet.toFixed(2);
+      document.getElementById('totalVAT').textContent = totalVAT.toFixed(2);
+      document.getElementById('totalGross').textContent = totalGross.toFixed(2);
     }
 
-    function addRow() {
+    function addItem() {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td class="border p-2 whitespace-normal">
-          <textarea class="w-full border p-2 rounded resize-y" rows="2" placeholder="Item name"></textarea>
-        </td>
-        <td class="border p-2"><input type="number" class="w-full border p-2 rounded" placeholder="1" /></td>
-        <td class="border p-2"><input type="number" class="w-full border p-2 rounded" placeholder="0.00" /></td>
-        <td class="border p-2"><input type="number" class="w-full border p-2 rounded" placeholder="20" /></td>
-        <td class="border p-2">0.00</td>
-        <td class="border p-2">0.00</td>
-        <td class="border p-2">0.00</td>
+        <td class="border p-2"><textarea class="w-full border p-2 rounded resize-y" rows="2" placeholder="Item description"></textarea></td>
+        <td class="border p-2"><input type="number" class="w-full border p-2 rounded qty" value="1"></td>
+        <td class="border p-2"><input type="number" class="w-full border p-2 rounded price" value="0"></td>
+        <td class="border p-2"><input type="number" class="w-full border p-2 rounded vatRate" value="20"></td>
+        <td class="border p-2 net">0.00</td>
+        <td class="border p-2 vat">0.00</td>
+        <td class="border p-2 gross">0.00</td>
       `;
       document.getElementById('items').appendChild(row);
-      row.querySelectorAll('input, textarea').forEach(input => input.addEventListener('input', updateTotals));
+      bindInputs();
     }
 
-    document.querySelectorAll('input, textarea').forEach(input => input.addEventListener('input', updateTotals));
+    function bindInputs() {
+      document.querySelectorAll('.qty, .price, .vatRate').forEach(input => {
+        input.addEventListener('input', calculate);
+      });
+    }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      const dateInput = document.getElementById('invoiceDate');
-      if (dateInput) {
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.value = today;
+    // Invoice date and due date logic
+    document.getElementById('invoiceDate').addEventListener('change', updateDueDate);
+    document.getElementById('paymentTerms').addEventListener('change', updateDueDate);
+
+    function updateDueDate() {
+      const invoiceDate = new Date(document.getElementById('invoiceDate').value);
+      const terms = parseInt(document.getElementById('paymentTerms').value);
+      if (!isNaN(invoiceDate) && terms) {
+        invoiceDate.setDate(invoiceDate.getDate() + terms);
+        document.getElementById('dueDate').value = invoiceDate.toISOString().split('T')[0];
       }
+    }
+
+    // Logo upload
+    document.getElementById('logoInput').addEventListener('change', e => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        document.getElementById('logoPreview').src = event.target.result;
+      };
+      if (file) reader.readAsDataURL(file);
+    });
+
+    // Prefill today's date
+    window.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('invoiceDate').value = today;
+      updateDueDate();
+      bindInputs();
+      calculate();
     });
   </script>
 </body>
